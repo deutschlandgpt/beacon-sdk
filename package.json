@@ -1,0 +1,48 @@
+{
+  "name": "@deutschlandgpt/beacon-sdk",
+  "version": "0.1.0",
+  "description": "TypeScript SDK for the DGPT Beacon API",
+  "keywords": [
+    "beacon",
+    "status-page",
+    "sdk"
+  ],
+  "license": "MIT",
+  "author": "Titanom",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@deutschlandgpt/prettier-config": "^1.0.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  },
+  "packageManager": "pnpm@9.15.3",
+  "engines": {
+    "node": ">=18"
+  }
+}

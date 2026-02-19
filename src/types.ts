@@ -1,6 +1,12 @@
 // ── Enums ───────────────────────────────────────────────────────────
 
-export type ChangelogTag = 'api' | 'chat' | 'workflows';
+export interface ChangelogTag {
+  id: string;
+  name: string;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export type ChangelogStatus = 'draft' | 'published' | 'archived';
 
@@ -105,7 +111,7 @@ export interface SubscribeResponse {
 // ── Param Types ─────────────────────────────────────────────────────
 
 export interface ChangelogListParams {
-  tag?: ChangelogTag;
+  tag?: string;
   since?: string;
   breaking?: boolean;
   limit?: number;

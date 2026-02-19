@@ -1,5 +1,5 @@
 import type { BeaconClient } from '../client';
-import type { Changelog, ChangelogListParams } from '../types';
+import type { Changelog, ChangelogListParams, ChangelogTag } from '../types';
 
 export class Changelogs {
   constructor(private readonly client: BeaconClient) {}
@@ -20,5 +20,13 @@ export class Changelogs {
 
   async get(id: string): Promise<Changelog> {
     return this.client.request<Changelog>('GET', `/api/v1/changelogs/${encodeURIComponent(id)}`);
+  }
+
+  async tags(): Promise<ChangelogTag[]> {
+    return this.client.request<ChangelogTag[]>('GET', '/api/v1/changelog-tags');
+  }
+
+  rssUrl(): string {
+    return this.client.buildUrl('/api/v1/changelogs/rss');
   }
 }

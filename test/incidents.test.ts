@@ -68,4 +68,11 @@ describe('Incidents', () => {
 
     await expect(client.incidents.active()).rejects.toThrow(BeaconAuthError);
   });
+
+  it('rssUrl() returns the incidents RSS URL', () => {
+    const fetch = mockFetch(async () => jsonResponse([]));
+    const client = createClient(fetch);
+
+    expect(client.incidents.rssUrl()).toBe(`${BASE_URL}/api/v1/incidents/rss`);
+  });
 });

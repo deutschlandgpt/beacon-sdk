@@ -11,4 +11,8 @@ export class Incidents {
   async active(): Promise<Incident[]> {
     return this.client.request<Incident[]>('GET', '/api/v1/incidents/active', { auth: true });
   }
+
+  rssUrl(): string {
+    return this.client.buildUrl('/api/v1/incidents/rss');
+  }
 }

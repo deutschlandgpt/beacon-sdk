@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Changelog } from '../src/types';
+import type { Changelog, ChangelogTag } from '../src/types';
 import { BASE_URL, createClient, jsonResponse, mockFetch } from './helpers';
+
+const sampleTag: ChangelogTag = {
+  id: 'tag-1',
+  name: 'api',
+  color: '#3B82F6',
+  createdAt: '2025-01-01T00:00:00Z',
+  updatedAt: '2025-01-01T00:00:00Z',
+};
 
 const sampleChangelog: Changelog = {
   id: '123',
@@ -10,7 +18,7 @@ const sampleChangelog: Changelog = {
   version: '1.2.0',
   status: 'published',
   versionType: 'minor',
-  tags: ['api'],
+  tags: [sampleTag],
   isBreakingChange: false,
   publishedAt: '2025-01-01T00:00:00Z',
   createdAt: '2025-01-01T00:00:00Z',
@@ -96,5 +104,26 @@ describe('Changelogs', () => {
     await client.changelogs.get('has spaces/slashes');
 
     expect(capturedUrl).toBe(`${BASE_URL}/api/v1/changelogs/has%20spaces%2Fslashes`);
+  });
+
+  it('tags() sends GET to /api/v1/changelog-tags', async () => {
+    let capturedUrl = '';
+    const fetch = mockFetch(async (url) => {
+      capturedUrl = url;
+      return jsonResponse([sampleTag]);
+    });
+
+    const client = createClient(fetch);
+    const result = await client.changelogs.tags();
+
+    expect(capturedUrl).toBe(`${BASE_URL}/api/v1/changelog-tags`);
+    expect(result).toEqual([sampleTag]);
+  });
+
+  it('rssUrl() returns the changelogs RSS URL', () => {
+    const fetch = mockFetch(async () => jsonResponse([]));
+    const client = createClient(fetch);
+
+    expect(client.changelogs.rssUrl()).toBe(`${BASE_URL}/api/v1/changelogs/rss`);
   });
 });

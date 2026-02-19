@@ -29,6 +29,10 @@ export class BeaconClient {
     this.feedback = new Feedback(this);
   }
 
+  buildUrl(path: string): string {
+    return `${this.baseUrl}${path}`;
+  }
+
   async request<T>(
     method: string,
     path: string,

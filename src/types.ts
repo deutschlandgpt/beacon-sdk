@@ -24,6 +24,8 @@ export type FeedbackStatus = 'new' | 'investigating' | 'planned' | 'resolved' | 
 
 export type EmailSubscriptionType = 'changelogs' | 'status_updates' | 'newsletters';
 
+export type Locale = 'en' | 'de';
+
 // ── Response Models ─────────────────────────────────────────────────
 
 export interface Changelog {
@@ -116,6 +118,11 @@ export interface ChangelogListParams {
   breaking?: boolean;
   limit?: number;
   offset?: number;
+  locale?: Locale;
+}
+
+export interface ChangelogGetParams {
+  locale?: Locale;
 }
 
 export interface SubscribeParams {

@@ -3,6 +3,7 @@ export { BeaconError, BeaconValidationError, BeaconAuthError, BeaconNotFoundErro
 export type {
   BeaconClientConfig,
   Changelog,
+  ChangelogGetParams,
   ChangelogListParams,
   ChangelogStatus,
   ChangelogTag,
@@ -13,6 +14,7 @@ export type {
   Incident,
   IncidentSeverity,
   IncidentStatus,
+  Locale,
   MonitorCheckSummary,
   MonitorStatus,
   MonitorStatusEntry,

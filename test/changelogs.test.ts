@@ -64,6 +64,20 @@ describe('Changelogs', () => {
     expect(url.searchParams.get('since')).toBe('1.0.0');
   });
 
+  it('list() passes locale query param', async () => {
+    let capturedUrl = '';
+    const fetch = mockFetch(async (url) => {
+      capturedUrl = url;
+      return jsonResponse([]);
+    });
+
+    const client = createClient(fetch);
+    await client.changelogs.list({ locale: 'de' });
+
+    const url = new URL(capturedUrl);
+    expect(url.searchParams.get('locale')).toBe('de');
+  });
+
   it('list() omits undefined params', async () => {
     let capturedUrl = '';
     const fetch = mockFetch(async (url) => {
@@ -91,6 +105,21 @@ describe('Changelogs', () => {
 
     expect(capturedUrl).toBe(`${BASE_URL}/api/v1/changelogs/123`);
     expect(result).toEqual(sampleChangelog);
+  });
+
+  it('get() passes locale query param', async () => {
+    let capturedUrl = '';
+    const fetch = mockFetch(async (url) => {
+      capturedUrl = url;
+      return jsonResponse(sampleChangelog);
+    });
+
+    const client = createClient(fetch);
+    await client.changelogs.get('123', { locale: 'de' });
+
+    const url = new URL(capturedUrl);
+    expect(url.pathname).toBe('/api/v1/changelogs/123');
+    expect(url.searchParams.get('locale')).toBe('de');
   });
 
   it('get() encodes id with special characters', async () => {
@@ -125,5 +154,12 @@ describe('Changelogs', () => {
     const client = createClient(fetch);
 
     expect(client.changelogs.rssUrl()).toBe(`${BASE_URL}/api/v1/changelogs/rss`);
+  });
+
+  it('rssUrl() appends locale to URL', () => {
+    const fetch = mockFetch(async () => jsonResponse([]));
+    const client = createClient(fetch);
+
+    expect(client.changelogs.rssUrl('de')).toBe(`${BASE_URL}/api/v1/changelogs/rss?locale=de`);
   });
 });

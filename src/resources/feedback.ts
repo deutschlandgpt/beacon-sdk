@@ -18,6 +18,8 @@ export class Feedback {
     if (params.planTier !== undefined) formData.set('planTier', params.planTier);
     if (params.browserInfo !== undefined) formData.set('browserInfo', params.browserInfo);
     if (params.deviceInfo !== undefined) formData.set('deviceInfo', params.deviceInfo);
+    if (params.consentToNotify !== undefined)
+      formData.set('consentToNotify', String(params.consentToNotify));
 
     if (params.attachments) {
       for (const file of params.attachments) {

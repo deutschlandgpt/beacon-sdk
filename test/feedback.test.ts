@@ -59,6 +59,27 @@ describe('Feedback', () => {
     expect(capturedBody?.has('planTier')).toBe(false);
     expect(capturedBody?.has('browserInfo')).toBe(false);
     expect(capturedBody?.has('deviceInfo')).toBe(false);
+    expect(capturedBody?.has('consentToNotify')).toBe(false);
+  });
+
+  it('submit() includes consentToNotify as string in FormData when provided', async () => {
+    let capturedBody: FormData | undefined;
+
+    const fetch = mockFetch(async (_url, init) => {
+      capturedBody = init?.body as FormData;
+      return jsonResponse({ feedback: { id: 'f-1' }, similar: [] }, 201);
+    });
+
+    const client = createClient(fetch, { apiKey: 'bk_test' });
+    await client.feedback.submit({
+      type: 'support',
+      title: 'Need help',
+      description: 'Cannot access my account',
+      consentToNotify: true,
+    });
+
+    expect(capturedBody?.get('type')).toBe('support');
+    expect(capturedBody?.get('consentToNotify')).toBe('true');
   });
 
   it('submit() appends file attachments', async () => {

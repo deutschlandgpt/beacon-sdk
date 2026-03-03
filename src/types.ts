@@ -32,6 +32,7 @@ export interface Changelog {
   id: string;
   title: string;
   content: string;
+  headerImage: string | null;
   version: string;
   status: ChangelogStatus;
   versionType: VersionType;

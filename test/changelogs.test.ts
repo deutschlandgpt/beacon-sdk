@@ -15,6 +15,7 @@ const sampleChangelog: Changelog = {
   id: '123',
   title: 'New feature',
   content: 'Details here',
+  headerImage: null,
   version: '1.2.0',
   status: 'published',
   versionType: 'minor',

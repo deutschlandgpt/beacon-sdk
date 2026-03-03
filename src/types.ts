@@ -18,7 +18,7 @@ export type IncidentStatus = 'investigating' | 'identified' | 'monitoring' | 're
 
 export type IncidentSeverity = 'minor' | 'major' | 'critical';
 
-export type FeedbackType = 'bug_report' | 'feature_request' | 'improvement' | 'other';
+export type FeedbackType = 'bug_report' | 'feature_request' | 'improvement' | 'support' | 'other';
 
 export type FeedbackStatus = 'new' | 'investigating' | 'planned' | 'resolved' | 'wont_fix';
 
@@ -90,6 +90,7 @@ export interface Feedback {
   parentFeedbackId: string | null;
   resolvedAt: string | null;
   resolutionEmailSent: boolean;
+  consentToNotify: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -141,6 +142,7 @@ export interface SubmitFeedbackParams {
   planTier?: string;
   browserInfo?: string;
   deviceInfo?: string;
+  consentToNotify?: boolean;
   attachments?: File[];
 }
 

@@ -18,9 +18,22 @@ pnpm build
 # Run all tests
 pnpm test
 
+# Run a single test file (vitest run accepts a path/pattern)
+pnpm test test/changelogs.test.ts
+
 # Type check without emitting files
 pnpm typecheck
+
+# Format all files / check formatting (Prettier, config: @deutschlandgpt/prettier-config)
+pnpm format
+pnpm format:check
 ```
+
+There is no separate lint step — Prettier (`format:check`) plus `typecheck` cover static checking.
+
+### CI Checks
+
+PRs targeting `master` must pass the `static-checks` workflow (`.github/workflows/static-checks.yml`), which runs, in order: `pnpm format:check`, `pnpm typecheck`, `pnpm test`, and `pnpm audit --audit-level=critical`. Run these locally before pushing.
 
 ## Architecture
 
@@ -41,6 +54,10 @@ The SDK follows a resource-based architecture where each API domain (changelogs,
    - Body serialization (JSON or FormData)
    - Response parsing
    - Error mapping to typed error classes
+
+**Exception — URL builders:** Some resource methods return a URL string instead of performing a fetch. `Changelogs.rssUrl(locale?)` uses `client.buildUrl(path)` to construct an RSS feed URL without an HTTP request. When adding URL-returning helpers, use `buildUrl()` rather than `request()`.
+
+**Authenticated endpoints:** Pass `auth: true` in request options to attach the `x-api-key` header; this throws `BeaconAuthError` if no `apiKey` was configured. Public methods (e.g. `feedback.submitPublic()`, `changelogs.list()`) omit it. `FormData` bodies (file attachments) are sent via the `formData` option, which skips JSON serialization and the `content-type` header.
 
 ### Error Handling
 
@@ -85,7 +102,7 @@ The build process (tsup) generates:
 
 Releases are **tag-driven**, not driven by the committed `package.json` version. The publish workflow (`.github/workflows/publish.yml`) runs on pushing a tag matching `*.*.*` whose base branch is `master`/`main`:
 
-1. It extracts the version from the git tag (the tag *is* the version).
+1. It extracts the version from the git tag (the tag _is_ the version).
 2. It runs `npm version <tag> --no-git-tag-version`, which overwrites the `version` field in `package.json` at CI time.
 3. It builds and publishes that version to npm.
 

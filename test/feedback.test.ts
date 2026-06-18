@@ -113,4 +113,116 @@ describe('Feedback', () => {
       client.feedback.submit({ type: 'bug_report', title: 'Bug', description: 'Desc' }),
     ).rejects.toThrow(BeaconAuthError);
   });
+
+  it('submit() serializes tags as a JSON string in FormData', async () => {
+    let capturedBody: FormData | undefined;
+
+    const fetch = mockFetch(async (_url, init) => {
+      capturedBody = init?.body as FormData;
+      return jsonResponse({ feedback: { id: 'f-1' }, similar: [] }, 201);
+    });
+
+    const client = createClient(fetch, { apiKey: 'bk_test' });
+    await client.feedback.submit({
+      type: 'bug_report',
+      title: 'Bug',
+      description: 'Desc',
+      tags: { plan: 'pro', region: 'eu' },
+    });
+
+    expect(capturedBody?.get('tags')).toBe(JSON.stringify({ plan: 'pro', region: 'eu' }));
+  });
+
+  it('submitPublic() sends POST to /api/v1/public-feedback without auth', async () => {
+    let capturedUrl = '';
+    let capturedMethod = '';
+    let capturedHeaders: Record<string, string> = {};
+    let capturedBody: FormData | undefined;
+
+    const fetch = mockFetch(async (url, init) => {
+      capturedUrl = url;
+      capturedMethod = init?.method ?? '';
+      capturedHeaders = init?.headers as Record<string, string>;
+      capturedBody = init?.body as FormData;
+      return jsonResponse({ success: true }, 201);
+    });
+
+    const client = createClient(fetch);
+    const result = await client.feedback.submitPublic({
+      type: 'feature_request',
+      title: 'Add dark mode',
+      description: 'Please add dark mode',
+    });
+
+    expect(capturedUrl).toBe(`${BASE_URL}/api/v1/public-feedback`);
+    expect(capturedMethod).toBe('POST');
+    expect(capturedHeaders['x-api-key']).toBeUndefined();
+    expect(capturedBody).toBeInstanceOf(FormData);
+    expect(capturedBody?.get('type')).toBe('feature_request');
+    expect(result).toEqual({ success: true });
+  });
+
+  it('messages() sends GET to /api/v1/public-feedback/messages with token query', async () => {
+    let capturedUrl = '';
+
+    const message = {
+      id: 'msg-1',
+      feedbackId: 'f-1',
+      sender: 'admin',
+      authorUserId: 'u-1',
+      authorName: 'Support',
+      authorEmail: 'support@example.com',
+      body: 'Thanks for the report',
+      createdAt: '2025-01-01T00:00:00Z',
+    };
+
+    const fetch = mockFetch(async (url) => {
+      capturedUrl = url;
+      return jsonResponse([message]);
+    });
+
+    const client = createClient(fetch);
+    const result = await client.feedback.messages('public-token-123');
+
+    expect(capturedUrl).toBe(`${BASE_URL}/api/v1/public-feedback/messages?token=public-token-123`);
+    expect(result).toEqual([message]);
+  });
+
+  it('sendMessage() sends POST JSON to /api/v1/public-feedback/messages', async () => {
+    let capturedUrl = '';
+    let capturedMethod = '';
+    let capturedHeaders: Record<string, string> = {};
+    let capturedBody = '';
+
+    const message = {
+      id: 'msg-2',
+      feedbackId: 'f-1',
+      sender: 'user',
+      authorUserId: null,
+      authorName: 'Jane',
+      authorEmail: 'jane@example.com',
+      body: 'Any update?',
+      createdAt: '2025-01-01T00:00:00Z',
+    };
+
+    const fetch = mockFetch(async (url, init) => {
+      capturedUrl = url;
+      capturedMethod = init?.method ?? '';
+      capturedHeaders = init?.headers as Record<string, string>;
+      capturedBody = init?.body as string;
+      return jsonResponse(message, 201);
+    });
+
+    const client = createClient(fetch);
+    const result = await client.feedback.sendMessage({
+      token: 'public-token-123',
+      body: 'Any update?',
+    });
+
+    expect(capturedUrl).toBe(`${BASE_URL}/api/v1/public-feedback/messages`);
+    expect(capturedMethod).toBe('POST');
+    expect(capturedHeaders['content-type']).toBe('application/json');
+    expect(JSON.parse(capturedBody)).toEqual({ token: 'public-token-123', body: 'Any update?' });
+    expect(result).toEqual(message);
+  });
 });

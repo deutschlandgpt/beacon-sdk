@@ -13,7 +13,18 @@ const sampleMonitor: MonitorStatusEntry = {
   responseTime: 42,
   statusCode: 200,
   lastChecked: '2025-01-01T00:00:00Z',
-  history: [{ status: 'operational', checkedAt: '2025-01-01T00:00:00Z', responseTime: 42 }],
+  uptimePercent: '99.95',
+  dailySummaries: [
+    {
+      date: '2025-01-01',
+      status: 'operational',
+      totalChecks: 24,
+      operationalChecks: 24,
+      degradedChecks: 0,
+      outageChecks: 0,
+      avgResponseTimeMs: 42,
+    },
+  ],
 };
 
 describe('Monitors', () => {

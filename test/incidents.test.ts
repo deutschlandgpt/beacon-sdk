@@ -13,6 +13,7 @@ const sampleIncident: Incident = {
   published: true,
   resolvedAt: null,
   affectedMonitorIds: ['m-1'],
+  sentryIssueId: null,
   createdAt: '2025-01-01T00:00:00Z',
   updatedAt: '2025-01-01T00:00:00Z',
 };

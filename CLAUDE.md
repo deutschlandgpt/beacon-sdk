@@ -81,6 +81,21 @@ The build process (tsup) generates:
 - `dist/index.d.cts` - TypeScript declarations for CJS
 - Source maps for all outputs
 
+## Releasing
+
+Releases are **tag-driven**, not driven by the committed `package.json` version. The publish workflow (`.github/workflows/publish.yml`) runs on pushing a tag matching `*.*.*` whose base branch is `master`/`main`:
+
+1. It extracts the version from the git tag (the tag *is* the version).
+2. It runs `npm version <tag> --no-git-tag-version`, which overwrites the `version` field in `package.json` at CI time.
+3. It builds and publishes that version to npm.
+
+Because CI overwrites the version, **you do not need to manually bump `version` in `package.json`** — the committed value is ignored at publish time and will drift from published versions. To cut a release, tag a commit on `master` and push the tag:
+
+```bash
+git tag 0.1.0
+git push origin 0.1.0
+```
+
 ## Adding New Resources
 
 To add a new API resource:

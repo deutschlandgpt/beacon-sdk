@@ -1,6 +1,6 @@
 {
   "name": "@deutschlandgpt/beacon-sdk",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "TypeScript SDK for the DGPT Beacon API",
   "keywords": [
     "beacon",
@@ -43,7 +43,7 @@
     "@deutschlandgpt/prettier-config": "^1.0.0",
     "tsup": "^8.4.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+    "vitest": "^3.2.6"
   },
   "packageManager": "pnpm@9.15.3",
   "engines": {
@@ -51,5 +51,14 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "pnpm": {
+    "overrides": {
+      "esbuild": "^0.28.1",
+      "picomatch": "^4.0.4",
+      "postcss": "^8.5.15",
+      "rollup": "^4.62.0",
+      "vite": "^7.3.5"
+    }
   }
 }

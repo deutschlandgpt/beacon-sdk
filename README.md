@@ -76,7 +76,8 @@ const monitors = await beacon.monitors.status();
 // - id, name, description
 // - currentStatus: 'operational' | 'degraded' | 'outage' | 'unknown'
 // - responseTime, statusCode, lastChecked
-// - history: array of recent check results
+// - uptimePercent: 90-day uptime as a string (e.g. "99.95"), or null
+// - dailySummaries: per-day check summaries (up to 90 days)
 ```
 
 ### Incidents
@@ -115,12 +116,14 @@ const response = await beacon.subscribers.subscribe({
 
 ### Feedback
 
-Submit user feedback (requires API key).
+Submit user feedback. `submit()` requires an API key and returns the created
+feedback plus similar existing feedback; `submitPublic()` is unauthenticated
+(for public/embedded forms) and returns `{ success: true }`.
 
 ```typescript
-// Submit feedback
+// Submit feedback (requires API key)
 const result = await beacon.feedback.submit({
-  type: "bug_report", // 'bug_report' | 'feature_request' | 'improvement' | 'other'
+  type: "bug_report", // 'bug_report' | 'feature_request' | 'improvement' | 'support' | 'other'
   title: "Issue with login",
   description: "Detailed description of the issue",
 
@@ -131,12 +134,36 @@ const result = await beacon.feedback.submit({
   planTier: "Pro",
   browserInfo: navigator.userAgent,
   deviceInfo: "Desktop",
+  consentToNotify: true,
+  tags: { source: "widget", region: "eu" }, // Arbitrary key/value metadata
   attachments: [file1, file2], // Array of File objects
 });
 
 // Response includes the created feedback and similar existing feedback
 console.log(result.feedback);
 console.log(result.similar);
+
+// Submit feedback from a public form (no API key required)
+await beacon.feedback.submitPublic({
+  type: "feature_request",
+  title: "Add dark mode",
+  description: "Please add a dark theme",
+  userEmail: "user@example.com",
+});
+```
+
+When feedback is submitted with a `userEmail`, the user can follow up through a
+public conversation thread identified by the feedback's `publicToken`:
+
+```typescript
+// Fetch the message thread for a feedback item
+const messages = await beacon.feedback.messages("public-token");
+
+// Post a user reply to the thread
+const message = await beacon.feedback.sendMessage({
+  token: "public-token",
+  body: "Any update on this?",
+});
 ```
 
 ## Error Handling
@@ -182,7 +209,7 @@ The SDK is written in TypeScript and includes full type definitions. All API res
 ```typescript
 import type {
   Changelog,
-  Monitor,
+  MonitorStatusEntry,
   Incident,
   Feedback,
   ChangelogListParams,
@@ -191,7 +218,7 @@ import type {
 
 // Types are automatically inferred
 const changelogs: Changelog[] = await beacon.changelogs.list();
-const monitor: Monitor = monitors[0];
+const monitor: MonitorStatusEntry = monitors[0];
 ```
 
 ## Examples
@@ -258,6 +285,15 @@ if (feedback.similar.length > 0) {
     console.log(`- ${item.title} (${item.status})`);
   });
 }
+```
+
+## Releasing
+
+Publishing is driven by git tags, not by the `version` field in `package.json`. Pushing a tag like `0.1.0` from a commit on `master` triggers the publish workflow, which derives the published version from the tag and overwrites `package.json` at build time. Manually bumping the version in `package.json` has no effect on what gets published.
+
+```bash
+git tag 0.1.0
+git push origin 0.1.0
 ```
 
 ## License

@@ -22,6 +22,8 @@ export type FeedbackType = 'bug_report' | 'feature_request' | 'improvement' | 's
 
 export type FeedbackStatus = 'new' | 'investigating' | 'planned' | 'resolved' | 'wont_fix';
 
+export type FeedbackMessageSender = 'user' | 'admin';
+
 export type EmailSubscriptionType = 'changelogs' | 'status_updates' | 'newsletters';
 
 export type Locale = 'en' | 'de';
@@ -43,10 +45,14 @@ export interface Changelog {
   updatedAt: string;
 }
 
-export interface MonitorCheckSummary {
+export interface MonitorDailySummary {
+  date: string;
   status: MonitorStatus;
-  checkedAt: string;
-  responseTime: number;
+  totalChecks: number;
+  operationalChecks: number;
+  degradedChecks: number;
+  outageChecks: number;
+  avgResponseTimeMs: number;
 }
 
 export interface MonitorStatusEntry {
@@ -59,7 +65,8 @@ export interface MonitorStatusEntry {
   responseTime: number;
   statusCode: number | null;
   lastChecked: string | null;
-  history: MonitorCheckSummary[];
+  uptimePercent: string | null;
+  dailySummaries: MonitorDailySummary[];
 }
 
 export interface Incident {
@@ -71,6 +78,7 @@ export interface Incident {
   published: boolean;
   resolvedAt: string | null;
   affectedMonitorIds: string[];
+  sentryIssueId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -88,6 +96,11 @@ export interface Feedback {
   browserInfo: string | null;
   deviceInfo: string | null;
   parentFeedbackId: string | null;
+  assigneeId: string | null;
+  jiraIssueKey: string | null;
+  jiraIssueUrl: string | null;
+  publicToken: string | null;
+  tags: Record<string, string> | null;
   resolvedAt: string | null;
   resolutionEmailSent: boolean;
   consentToNotify: boolean;
@@ -95,17 +108,26 @@ export interface Feedback {
   updatedAt: string;
 }
 
-export interface SimilarFeedback {
-  id: string;
-  title: string;
-  description: string;
-  type: FeedbackType;
-  status: FeedbackStatus;
-}
+export type SimilarFeedback = Feedback & { similarity: number };
 
 export interface SubmitFeedbackResponse {
   feedback: Feedback;
   similar: SimilarFeedback[];
+}
+
+export interface SubmitPublicFeedbackResponse {
+  success: boolean;
+}
+
+export interface FeedbackMessage {
+  id: string;
+  feedbackId: string;
+  sender: FeedbackMessageSender;
+  authorUserId: string | null;
+  authorName: string | null;
+  authorEmail: string | null;
+  body: string;
+  createdAt: string;
 }
 
 export interface SubscribeResponse {
@@ -143,7 +165,13 @@ export interface SubmitFeedbackParams {
   browserInfo?: string;
   deviceInfo?: string;
   consentToNotify?: boolean;
+  tags?: Record<string, string>;
   attachments?: File[];
+}
+
+export interface SendFeedbackMessageParams {
+  token: string;
+  body: string;
 }
 
 // ── Client Config ───────────────────────────────────────────────────

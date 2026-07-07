@@ -59,7 +59,27 @@ describe('Feedback', () => {
     expect(capturedBody?.has('planTier')).toBe(false);
     expect(capturedBody?.has('browserInfo')).toBe(false);
     expect(capturedBody?.has('deviceInfo')).toBe(false);
+    expect(capturedBody?.has('pageUrl')).toBe(false);
     expect(capturedBody?.has('consentToNotify')).toBe(false);
+  });
+
+  it('submit() includes pageUrl in FormData when provided', async () => {
+    let capturedBody: FormData | undefined;
+
+    const fetch = mockFetch(async (_url, init) => {
+      capturedBody = init?.body as FormData;
+      return jsonResponse({ feedback: { id: 'f-1' }, similar: [] }, 201);
+    });
+
+    const client = createClient(fetch, { apiKey: 'bk_test' });
+    await client.feedback.submit({
+      type: 'bug_report',
+      title: 'Bug',
+      description: 'Desc',
+      pageUrl: 'https://app.example.com/dashboard',
+    });
+
+    expect(capturedBody?.get('pageUrl')).toBe('https://app.example.com/dashboard');
   });
 
   it('submit() includes consentToNotify as string in FormData when provided', async () => {
@@ -152,6 +172,7 @@ describe('Feedback', () => {
       type: 'feature_request',
       title: 'Add dark mode',
       description: 'Please add dark mode',
+      userEmail: 'user@example.com',
     });
 
     expect(capturedUrl).toBe(`${BASE_URL}/api/v1/public-feedback`);
@@ -159,6 +180,7 @@ describe('Feedback', () => {
     expect(capturedHeaders['x-api-key']).toBeUndefined();
     expect(capturedBody).toBeInstanceOf(FormData);
     expect(capturedBody?.get('type')).toBe('feature_request');
+    expect(capturedBody?.get('userEmail')).toBe('user@example.com');
     expect(result).toEqual({ success: true });
   });
 

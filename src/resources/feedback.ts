@@ -4,6 +4,7 @@ import type {
   SendFeedbackMessageParams,
   SubmitFeedbackParams,
   SubmitFeedbackResponse,
+  SubmitPublicFeedbackParams,
   SubmitPublicFeedbackResponse,
 } from '../types';
 
@@ -21,6 +22,7 @@ function buildFeedbackFormData(params: SubmitFeedbackParams): FormData {
   if (params.planTier !== undefined) formData.set('planTier', params.planTier);
   if (params.browserInfo !== undefined) formData.set('browserInfo', params.browserInfo);
   if (params.deviceInfo !== undefined) formData.set('deviceInfo', params.deviceInfo);
+  if (params.pageUrl !== undefined) formData.set('pageUrl', params.pageUrl);
   if (params.consentToNotify !== undefined)
     formData.set('consentToNotify', String(params.consentToNotify));
   if (params.tags !== undefined) formData.set('tags', JSON.stringify(params.tags));
@@ -44,7 +46,7 @@ export class Feedback {
     });
   }
 
-  async submitPublic(params: SubmitFeedbackParams): Promise<SubmitPublicFeedbackResponse> {
+  async submitPublic(params: SubmitPublicFeedbackParams): Promise<SubmitPublicFeedbackResponse> {
     return this.client.request<SubmitPublicFeedbackResponse>('POST', '/api/v1/public-feedback', {
       formData: buildFeedbackFormData(params),
     });

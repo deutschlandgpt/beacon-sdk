@@ -20,7 +20,16 @@ export type IncidentSeverity = 'minor' | 'major' | 'critical';
 
 export type FeedbackType = 'bug_report' | 'feature_request' | 'improvement' | 'support' | 'other';
 
-export type FeedbackStatus = 'new' | 'investigating' | 'planned' | 'resolved' | 'wont_fix';
+export type FeedbackStatus =
+  | 'new'
+  | 'investigating'
+  | 'in_progress'
+  | 'waiting_for_user'
+  | 'planned'
+  | 'resolved'
+  | 'wont_fix';
+
+export type FeedbackUrgency = 'critical' | 'high' | 'medium' | 'low';
 
 export type FeedbackMessageSender = 'user' | 'admin';
 
@@ -89,12 +98,14 @@ export interface Feedback {
   title: string;
   description: string;
   status: FeedbackStatus;
+  urgency: FeedbackUrgency | null;
   userEmail: string | null;
   userName: string | null;
   featureOrService: string | null;
   planTier: string | null;
   browserInfo: string | null;
   deviceInfo: string | null;
+  pageUrl: string | null;
   parentFeedbackId: string | null;
   assigneeId: string | null;
   jiraIssueKey: string | null;
@@ -104,6 +115,10 @@ export interface Feedback {
   resolvedAt: string | null;
   resolutionEmailSent: boolean;
   consentToNotify: boolean;
+  deletedAt: string | null;
+  statusChangedAt: string | null;
+  lastUserMessageAt: string | null;
+  autoClosed: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -127,6 +142,8 @@ export interface FeedbackMessage {
   authorName: string | null;
   authorEmail: string | null;
   body: string;
+  isDraft: boolean;
+  draftSource: string | null;
   createdAt: string;
 }
 
@@ -164,9 +181,14 @@ export interface SubmitFeedbackParams {
   planTier?: string;
   browserInfo?: string;
   deviceInfo?: string;
+  pageUrl?: string;
   consentToNotify?: boolean;
   tags?: Record<string, string>;
   attachments?: File[];
+}
+
+export interface SubmitPublicFeedbackParams extends Omit<SubmitFeedbackParams, 'userEmail'> {
+  userEmail: string;
 }
 
 export interface SendFeedbackMessageParams {

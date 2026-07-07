@@ -118,7 +118,8 @@ const response = await beacon.subscribers.subscribe({
 
 Submit user feedback. `submit()` requires an API key and returns the created
 feedback plus similar existing feedback; `submitPublic()` is unauthenticated
-(for public/embedded forms) and returns `{ success: true }`.
+(for public/embedded forms), **requires `userEmail`**, and returns
+`{ success: true }`.
 
 ```typescript
 // Submit feedback (requires API key)
@@ -134,6 +135,7 @@ const result = await beacon.feedback.submit({
   planTier: "Pro",
   browserInfo: navigator.userAgent,
   deviceInfo: "Desktop",
+  pageUrl: "https://app.example.com/dashboard", // URL where the feedback was submitted
   consentToNotify: true,
   tags: { source: "widget", region: "eu" }, // Arbitrary key/value metadata
   attachments: [file1, file2], // Array of File objects
@@ -143,7 +145,11 @@ const result = await beacon.feedback.submit({
 console.log(result.feedback);
 console.log(result.similar);
 
-// Submit feedback from a public form (no API key required)
+// The returned feedback carries a lifecycle status and a server-assigned urgency:
+// status:  'new' | 'investigating' | 'in_progress' | 'waiting_for_user' | 'planned' | 'resolved' | 'wont_fix'
+// urgency: 'critical' | 'high' | 'medium' | 'low' | null  (classified automatically, read-only)
+
+// Submit feedback from a public form (no API key required — userEmail is required)
 await beacon.feedback.submitPublic({
   type: "feature_request",
   title: "Add dark mode",

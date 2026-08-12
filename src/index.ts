@@ -11,6 +11,8 @@ export type {
   Feedback,
   FeedbackMessage,
   FeedbackMessageSender,
+  FeedbackParamsBase,
+  FeedbackReporterStage,
   FeedbackStatus,
   FeedbackType,
   FeedbackUrgency,

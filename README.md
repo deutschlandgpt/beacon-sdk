@@ -139,6 +139,11 @@ const result = await beacon.feedback.submit({
   consentToNotify: true,
   tags: { source: "widget", region: "eu" }, // Arbitrary key/value metadata
   attachments: [file1, file2], // Array of File objects
+
+  // Authenticated-only (see below): where the reporter's organisation stands
+  // commercially, so support can prioritise a customer who is still evaluating.
+  reporterStage: "trial_business", // 'customer' | 'trial_business' | 'trial_enterprise'
+  reporterTrialEndsAt: "2026-08-24T00:00:00.000Z", // ISO 8601; snapshot at report time
 });
 
 // Response includes the created feedback and similar existing feedback
@@ -157,6 +162,12 @@ await beacon.feedback.submitPublic({
   userEmail: "user@example.com",
 });
 ```
+
+`reporterStage` and `reporterTrialEndsAt` are accepted **only** by `submit()`.
+`submitPublic()` posts to an unauthenticated endpoint, so a caller must never be
+able to claim trial priority for their own ticket — Beacon strips both fields
+there. They therefore live on `SubmitFeedbackParams` rather than the shared
+`FeedbackParamsBase`, and `SubmitPublicFeedbackParams` does not accept them at all.
 
 When feedback is submitted with a `userEmail`, the user can follow up through a
 public conversation thread identified by the feedback's `publicToken`:
@@ -220,6 +231,7 @@ import type {
   Feedback,
   ChangelogListParams,
   SubmitFeedbackParams,
+  FeedbackReporterStage,
 } from "@deutschlandgpt/beacon-sdk";
 
 // Types are automatically inferred
@@ -308,4 +320,4 @@ MIT
 
 ## Author
 
-Titanom
+DeutschlandGPT

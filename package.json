@@ -12,7 +12,7 @@
     "url": "https://github.com/deutschlandgpt/beacon-sdk.git"
   },
   "license": "MIT",
-  "author": "Titanom",
+  "author": "DeutschlandGPT",
   "type": "module",
   "exports": {
     ".": {
@@ -37,7 +37,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json"
   },
   "devDependencies": {
     "@deutschlandgpt/prettier-config": "^1.0.0",

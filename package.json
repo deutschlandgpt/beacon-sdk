@@ -12,7 +12,7 @@
     "url": "https://github.com/deutschlandgpt/beacon-sdk.git"
   },
   "license": "MIT",
-  "author": "Titanom",
+  "author": "DeutschlandGPT",
   "type": "module",
   "exports": {
     ".": {

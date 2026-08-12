@@ -1,0 +1,17 @@
+// The base tsconfig excludes `test` (it is the build config: rootDir src, emits
+// declarations). Tests were therefore never typechecked by anything — vitest does
+// not typecheck either. This config exists so `pnpm typecheck` covers them too,
+// which is what makes the `@ts-expect-error` assertions in the suite real CI gates
+// rather than comments: if a type starts accepting something it should reject, the
+// expect-error line stops erroring and this run fails.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": ".",
+    "declaration": false,
+    "declarationMap": false
+  },
+  "include": ["src", "test"],
+  "exclude": ["node_modules", "dist"]
+}

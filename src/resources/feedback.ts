@@ -1,6 +1,7 @@
 import type { BeaconClient } from '../client';
 import type {
   FeedbackMessage,
+  FeedbackParamsBase,
   SendFeedbackMessageParams,
   SubmitFeedbackParams,
   SubmitFeedbackResponse,
@@ -8,7 +9,10 @@ import type {
   SubmitPublicFeedbackResponse,
 } from '../types';
 
-function buildFeedbackFormData(params: SubmitFeedbackParams): FormData {
+// Takes the BASE params on purpose, not SubmitFeedbackParams: this builder is
+// shared with the unauthenticated submitPublic(), so it must not be able to read —
+// let alone emit — the authenticated-only fields. Those are set in submit() below.
+function buildFeedbackFormData(params: FeedbackParamsBase): FormData {
   const formData = new FormData();
 
   formData.set('type', params.type);
@@ -40,8 +44,18 @@ export class Feedback {
   constructor(private readonly client: BeaconClient) {}
 
   async submit(params: SubmitFeedbackParams): Promise<SubmitFeedbackResponse> {
+    const formData = buildFeedbackFormData(params);
+
+    // Authenticated-only fields, set here rather than in the shared builder so
+    // submitPublic() physically cannot emit them (the builder's param type does
+    // not have them, and `tsc` is a CI gate). Beacon strips them on the public
+    // endpoint anyway; this keeps the SDK from advertising a silent no-op.
+    if (params.reporterStage !== undefined) formData.set('reporterStage', params.reporterStage);
+    if (params.reporterTrialEndsAt !== undefined)
+      formData.set('reporterTrialEndsAt', params.reporterTrialEndsAt);
+
     return this.client.request<SubmitFeedbackResponse>('POST', '/api/v1/feedback', {
-      formData: buildFeedbackFormData(params),
+      formData,
       auth: true,
     });
   }

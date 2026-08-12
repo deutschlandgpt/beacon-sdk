@@ -31,6 +31,13 @@ export type FeedbackStatus =
 
 export type FeedbackUrgency = 'critical' | 'high' | 'medium' | 'low';
 
+/**
+ * Where the reporter's organisation stands commercially. `'customer'` means they
+ * have paid; the trial values mean they are still evaluating. Absent/null on a
+ * feedback record means "not stated" — NOT "paying customer".
+ */
+export type FeedbackReporterStage = 'customer' | 'trial_business' | 'trial_enterprise';
+
 export type FeedbackMessageSender = 'user' | 'admin';
 
 export type EmailSubscriptionType = 'changelogs' | 'status_updates' | 'newsletters';
@@ -103,6 +110,8 @@ export interface Feedback {
   userName: string | null;
   featureOrService: string | null;
   planTier: string | null;
+  reporterStage: FeedbackReporterStage | null;
+  reporterTrialEndsAt: string | null;
   browserInfo: string | null;
   deviceInfo: string | null;
   pageUrl: string | null;
@@ -171,7 +180,8 @@ export interface SubscribeParams {
   subscribeTo: EmailSubscriptionType[];
 }
 
-export interface SubmitFeedbackParams {
+/** The fields accepted by BOTH the authenticated and the public submit endpoints. */
+export interface FeedbackParamsBase {
   type: FeedbackType;
   title: string;
   description: string;
@@ -187,7 +197,26 @@ export interface SubmitFeedbackParams {
   attachments?: File[];
 }
 
-export interface SubmitPublicFeedbackParams extends Omit<SubmitFeedbackParams, 'userEmail'> {
+export interface SubmitFeedbackParams extends FeedbackParamsBase {
+  /**
+   * Commercial stage of the reporter's organisation, so support can prioritise a
+   * ticket from a customer who is still evaluating us.
+   *
+   * AUTHENTICATED ONLY. This lives here and not on `FeedbackParamsBase` because
+   * `submitPublic()` posts to an unauthenticated endpoint where Beacon strips the
+   * field server-side — anyone could otherwise claim trial priority for their own
+   * ticket. Advertising it on the public params type would make it a silent no-op.
+   */
+  reporterStage?: FeedbackReporterStage;
+  /**
+   * When the reporter's trial ends, ISO 8601. A snapshot at report time, not a live
+   * fact. Only meaningful alongside a trial `reporterStage`. Authenticated only,
+   * for the same reason.
+   */
+  reporterTrialEndsAt?: string;
+}
+
+export interface SubmitPublicFeedbackParams extends Omit<FeedbackParamsBase, 'userEmail'> {
   userEmail: string;
 }
 

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { BeaconAuthError } from '../src/errors';
+import type { SubmitPublicFeedbackParams } from '../src/types';
 import { BASE_URL, createClient, jsonResponse, mockFetch } from './helpers';
 
 describe('Feedback', () => {
@@ -61,6 +62,8 @@ describe('Feedback', () => {
     expect(capturedBody?.has('deviceInfo')).toBe(false);
     expect(capturedBody?.has('pageUrl')).toBe(false);
     expect(capturedBody?.has('consentToNotify')).toBe(false);
+    expect(capturedBody?.has('reporterStage')).toBe(false);
+    expect(capturedBody?.has('reporterTrialEndsAt')).toBe(false);
   });
 
   it('submit() includes pageUrl in FormData when provided', async () => {
@@ -100,6 +103,27 @@ describe('Feedback', () => {
 
     expect(capturedBody?.get('type')).toBe('support');
     expect(capturedBody?.get('consentToNotify')).toBe('true');
+  });
+
+  it('submit() includes reporterStage and reporterTrialEndsAt in FormData when provided', async () => {
+    let capturedBody: FormData | undefined;
+
+    const fetch = mockFetch(async (_url, init) => {
+      capturedBody = init?.body as FormData;
+      return jsonResponse({ feedback: { id: 'f-1' }, similar: [] }, 201);
+    });
+
+    const client = createClient(fetch, { apiKey: 'bk_test' });
+    await client.feedback.submit({
+      type: 'bug_report',
+      title: 'Upload fails',
+      description: 'Uploading a large file fails silently',
+      reporterStage: 'trial_business',
+      reporterTrialEndsAt: '2026-08-24T00:00:00.000Z',
+    });
+
+    expect(capturedBody?.get('reporterStage')).toBe('trial_business');
+    expect(capturedBody?.get('reporterTrialEndsAt')).toBe('2026-08-24T00:00:00.000Z');
   });
 
   it('submit() appends file attachments', async () => {
@@ -182,6 +206,47 @@ describe('Feedback', () => {
     expect(capturedBody?.get('type')).toBe('feature_request');
     expect(capturedBody?.get('userEmail')).toBe('user@example.com');
     expect(result).toEqual({ success: true });
+  });
+
+  // The public endpoint is unauthenticated, so a caller must never be able to claim
+  // trial priority for their own ticket. The cast simulates a plain-JS host app
+  // passing the field anyway; the @ts-expect-error below is the compile-time half of
+  // the same guarantee, and `pnpm typecheck` is a CI gate — if the type ever starts
+  // accepting these fields, that line stops erroring and CI goes red.
+  it('submitPublic() never emits the authenticated-only reporter fields', async () => {
+    let capturedBody: FormData | undefined;
+
+    const fetch = mockFetch(async (_url, init) => {
+      capturedBody = init?.body as FormData;
+      return jsonResponse({ success: true }, 201);
+    });
+
+    const client = createClient(fetch);
+    await client.feedback.submitPublic({
+      type: 'bug_report',
+      title: 'Upload fails',
+      description: 'Uploading a large file fails silently',
+      userEmail: 'user@example.com',
+      reporterStage: 'trial_enterprise',
+      reporterTrialEndsAt: '2026-08-24T00:00:00.000Z',
+    } as unknown as SubmitPublicFeedbackParams);
+
+    expect(capturedBody?.has('reporterStage')).toBe(false);
+    expect(capturedBody?.has('reporterTrialEndsAt')).toBe(false);
+  });
+
+  it('submitPublic() does not accept the authenticated-only reporter fields at compile time', async () => {
+    const fetch = mockFetch(async () => jsonResponse({ success: true }, 201));
+    const client = createClient(fetch);
+
+    await client.feedback.submitPublic({
+      type: 'bug_report',
+      title: 'Upload fails',
+      description: 'Uploading a large file fails silently',
+      userEmail: 'user@example.com',
+      // @ts-expect-error reporterStage is authenticated-only and must not exist here
+      reporterStage: 'trial_enterprise',
+    });
   });
 
   it('messages() sends GET to /api/v1/public-feedback/messages with token query', async () => {

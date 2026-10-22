@@ -18,6 +18,24 @@ export type IncidentStatus = 'investigating' | 'identified' | 'monitoring' | 're
 
 export type IncidentSeverity = 'minor' | 'major' | 'critical';
 
+export type IncidentVisibility = 'public' | 'internal';
+
+export type IncidentSurface =
+  | 'web'
+  | 'desktop'
+  | 'ios'
+  | 'android'
+  | 'platform_api'
+  | 'office_addins'
+  | 'chrome_extension';
+
+export type IncidentOs = 'macos' | 'windows' | 'linux' | 'ios' | 'android' | 'chromeos';
+
+export type IncidentBrowser = 'chrome' | 'edge' | 'firefox' | 'safari' | 'opera' | 'samsung';
+
+/** Every language Beacon translates incidents into. */
+export type IncidentLocale = 'de' | 'en' | 'ar' | 'es' | 'hu' | 'pl' | 'sk' | 'tr' | 'uk' | 'zh';
+
 export type FeedbackType = 'bug_report' | 'feature_request' | 'improvement' | 'support' | 'other';
 
 export type FeedbackStatus =
@@ -94,9 +112,64 @@ export interface Incident {
   published: boolean;
   resolvedAt: string | null;
   affectedMonitorIds: string[];
+  /** Which clients are broken. Missing on Beacon versions before in-app targeting. */
+  affects?: ClientScope;
   sentryIssueId: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * A set of clients. An empty or missing list means "any"; `desktopVersion` bounds are inclusive
+ * `MAJOR.MINOR.PATCH`, and a missing side is unbounded.
+ */
+export interface ClientScope {
+  surfaces?: IncidentSurface[];
+  os?: IncidentOs[];
+  browsers?: IncidentBrowser[];
+  desktopVersion?: { min?: string; max?: string };
+}
+
+/** Who an incident is for. Both lists empty means everyone; a non-empty audience is always internal. */
+export interface IncidentAudience {
+  enterprises: { id: string; name: string }[];
+  /** Lowercased. */
+  userEmails: string[];
+}
+
+export type IncidentInAppMessages = Partial<Record<IncidentSurface, string>>;
+
+export interface InAppIncidentUpdate {
+  id: string;
+  status: IncidentStatus;
+  message: string;
+  createdAt: string;
+}
+
+/**
+ * The host-app feed: published incidents of both visibilities, unresolved or resolved within the
+ * last 30 minutes. Carries the audience, so it must never be forwarded to a browser as is.
+ */
+export interface InAppIncident {
+  id: string;
+  title: string;
+  description: string;
+  status: IncidentStatus;
+  severity: IncidentSeverity;
+  visibility: IncidentVisibility;
+  audience: IncidentAudience;
+  affects: ClientScope;
+  /** Already resolved by Beacon: falls back to `affects` when the incident sets no own scope. */
+  showOn: ClientScope;
+  inAppMessages: IncidentInAppMessages;
+  latestUpdate: InAppIncidentUpdate | null;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt: string | null;
+}
+
+export interface InAppIncidentsParams {
+  locale?: IncidentLocale;
 }
 
 export interface Feedback {

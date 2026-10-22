@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { BeaconAuthError } from '../src/errors';
-import type { Incident } from '../src/types';
+import type { InAppIncident, Incident } from '../src/types';
 import { BASE_URL, createClient, jsonResponse, mockFetch } from './helpers';
 
 const sampleIncident: Incident = {
@@ -68,6 +68,64 @@ describe('Incidents', () => {
     const client = createClient(fetch);
 
     await expect(client.incidents.active()).rejects.toThrow(BeaconAuthError);
+  });
+
+  it('inApp() sends GET to /api/v1/incidents/in-app with auth and locale', async () => {
+    const inAppIncident: InAppIncident = {
+      id: 'i-2',
+      title: 'Desktop down',
+      description: 'The desktop app cannot connect',
+      status: 'identified',
+      severity: 'critical',
+      visibility: 'internal',
+      audience: { enterprises: [{ id: 'e-1', name: 'Acme' }], userEmails: [] },
+      affects: { surfaces: ['desktop'], os: ['windows'] },
+      showOn: { surfaces: ['web'] },
+      inAppMessages: { web: 'Please use the web app for now.' },
+      latestUpdate: {
+        id: 'u-1',
+        status: 'identified',
+        message: 'Cause found',
+        createdAt: '2025-01-01T01:00:00Z',
+      },
+      createdAt: '2025-01-01T00:00:00Z',
+      updatedAt: '2025-01-01T01:00:00Z',
+      resolvedAt: null,
+    };
+    let capturedUrl = '';
+    let capturedHeaders: Record<string, string> = {};
+    const fetch = mockFetch(async (url, init) => {
+      capturedUrl = url;
+      capturedHeaders = init?.headers as Record<string, string>;
+      return jsonResponse([inAppIncident]);
+    });
+
+    const client = createClient(fetch, { apiKey: 'bk_test' });
+    const result = await client.incidents.inApp({ locale: 'pl' });
+
+    expect(capturedUrl).toBe(`${BASE_URL}/api/v1/incidents/in-app?locale=pl`);
+    expect(capturedHeaders['x-api-key']).toBe('bk_test');
+    expect(result).toEqual([inAppIncident]);
+  });
+
+  it('inApp() omits the locale when none is given', async () => {
+    let capturedUrl = '';
+    const fetch = mockFetch(async (url) => {
+      capturedUrl = url;
+      return jsonResponse([]);
+    });
+
+    const client = createClient(fetch, { apiKey: 'bk_test' });
+    await client.incidents.inApp();
+
+    expect(capturedUrl).toBe(`${BASE_URL}/api/v1/incidents/in-app`);
+  });
+
+  it('inApp() throws without apiKey', async () => {
+    const fetch = mockFetch(async () => jsonResponse([]));
+    const client = createClient(fetch);
+
+    await expect(client.incidents.inApp()).rejects.toThrow(BeaconAuthError);
   });
 
   it('rssUrl() returns the incidents RSS URL', () => {

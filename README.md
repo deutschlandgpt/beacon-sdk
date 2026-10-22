@@ -91,6 +91,11 @@ const incidents = await beacon.incidents.list();
 // Get active incidents (requires API key)
 const activeIncidents = await beacon.incidents.active();
 
+// Incidents for display inside the host app (requires API key). Includes internal and
+// audience-targeted incidents plus client scopes; filter per user on YOUR server and
+// never forward `audience` to a browser.
+const inApp = await beacon.incidents.inApp({ locale: 'de' });
+
 // Incident properties include:
 // - status: 'investigating' | 'identified' | 'monitoring' | 'resolved'
 // - severity: 'minor' | 'major' | 'critical'

@@ -36,6 +36,7 @@ export type IncidentBrowser = 'chrome' | 'edge' | 'firefox' | 'safari' | 'opera'
 /** Every language Beacon translates incidents into. */
 export type IncidentLocale = 'de' | 'en' | 'ar' | 'es' | 'hu' | 'pl' | 'sk' | 'tr' | 'uk' | 'zh';
 
+/** The types a reporter can submit. */
 export type FeedbackType =
   | 'bug_report'
   | 'feature_request'
@@ -44,11 +45,20 @@ export type FeedbackType =
   | 'security'
   | 'other';
 
+/**
+ * The type of a stored feedback record. Wider than {@link FeedbackType}: Beacon
+ * sets `'internal'` itself for tickets the team filed, and no reporter can
+ * submit it.
+ */
+export type FeedbackRecordType = FeedbackType | 'internal';
+
 export type FeedbackStatus =
   | 'new'
   | 'investigating'
   | 'in_progress'
   | 'waiting_for_user'
+  /** Handed to the sales team; Beacon sets it, not the reporter. */
+  | 'forwarded_to_sales'
   | 'planned'
   | 'resolved'
   | 'wont_fix';
@@ -180,7 +190,7 @@ export interface InAppIncidentsParams {
 
 export interface Feedback {
   id: string;
-  type: FeedbackType;
+  type: FeedbackRecordType;
   title: string;
   description: string;
   status: FeedbackStatus;

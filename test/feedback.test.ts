@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { BeaconAuthError } from '../src/errors';
-import type { SubmitPublicFeedbackParams } from '../src/types';
+import type { Feedback, SubmitPublicFeedbackParams } from '../src/types';
 import { BASE_URL, createClient, jsonResponse, mockFetch } from './helpers';
 
 describe('Feedback', () => {
@@ -121,6 +121,40 @@ describe('Feedback', () => {
     });
 
     expect(capturedBody?.get('type')).toBe('security');
+  });
+
+  it('submit() rejects the internal type at compile time', async () => {
+    const fetch = mockFetch(async () =>
+      jsonResponse({ feedback: { id: 'f-1' }, similar: [] }, 201),
+    );
+    const client = createClient(fetch, { apiKey: 'bk_test' });
+
+    await client.feedback.submit({
+      // @ts-expect-error internal is set by Beacon, never submitted
+      type: 'internal',
+      title: 'Filed by us',
+      description: 'Not a reporter type',
+    });
+  });
+
+  it('a returned feedback record can be internal and forwarded to sales', async () => {
+    const fetch = mockFetch(async () =>
+      jsonResponse(
+        { feedback: { id: 'f-1', type: 'internal', status: 'forwarded_to_sales' }, similar: [] },
+        201,
+      ),
+    );
+    const client = createClient(fetch, { apiKey: 'bk_test' });
+
+    const result = await client.feedback.submit({
+      type: 'support',
+      title: 'Quote request',
+      description: 'We would like a quote',
+    });
+    const record: Pick<Feedback, 'type' | 'status'> = result.feedback;
+
+    expect(record.type).toBe('internal');
+    expect(record.status).toBe('forwarded_to_sales');
   });
 
   it('submit() includes reporterStage and reporterTrialEndsAt in FormData when provided', async () => {

@@ -156,8 +156,10 @@ console.log(result.feedback);
 console.log(result.similar);
 
 // The returned feedback carries a lifecycle status and a server-assigned urgency:
-// status:  'new' | 'investigating' | 'in_progress' | 'waiting_for_user' | 'planned' | 'resolved' | 'wont_fix'
+// status:  'new' | 'investigating' | 'in_progress' | 'waiting_for_user' | 'forwarded_to_sales'
+//          | 'planned' | 'resolved' | 'wont_fix'
 // urgency: 'critical' | 'high' | 'medium' | 'low' | null  (classified automatically, read-only)
+// type:    any submittable type, or 'internal' for a ticket the team filed itself (FeedbackRecordType)
 
 // Submit feedback from a public form (no API key required — userEmail is required)
 await beacon.feedback.submitPublic({

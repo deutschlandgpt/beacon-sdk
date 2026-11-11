@@ -105,6 +105,24 @@ describe('Feedback', () => {
     expect(capturedBody?.get('consentToNotify')).toBe('true');
   });
 
+  it('submit() sends the security type', async () => {
+    let capturedBody: FormData | undefined;
+
+    const fetch = mockFetch(async (_url, init) => {
+      capturedBody = init?.body as FormData;
+      return jsonResponse({ feedback: { id: 'f-1' }, similar: [] }, 201);
+    });
+
+    const client = createClient(fetch, { apiKey: 'bk_test' });
+    await client.feedback.submit({
+      type: 'security',
+      title: 'Session token in URL',
+      description: 'The share link contains the session token',
+    });
+
+    expect(capturedBody?.get('type')).toBe('security');
+  });
+
   it('submit() includes reporterStage and reporterTrialEndsAt in FormData when provided', async () => {
     let capturedBody: FormData | undefined;
 

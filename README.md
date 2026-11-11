@@ -129,7 +129,7 @@ feedback plus similar existing feedback; `submitPublic()` is unauthenticated
 ```typescript
 // Submit feedback (requires API key)
 const result = await beacon.feedback.submit({
-  type: "bug_report", // 'bug_report' | 'feature_request' | 'improvement' | 'support' | 'other'
+  type: "bug_report", // 'bug_report' | 'feature_request' | 'improvement' | 'support' | 'security' | 'other'
   title: "Issue with login",
   description: "Detailed description of the issue",
 

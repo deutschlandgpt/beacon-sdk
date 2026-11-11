@@ -36,7 +36,13 @@ export type IncidentBrowser = 'chrome' | 'edge' | 'firefox' | 'safari' | 'opera'
 /** Every language Beacon translates incidents into. */
 export type IncidentLocale = 'de' | 'en' | 'ar' | 'es' | 'hu' | 'pl' | 'sk' | 'tr' | 'uk' | 'zh';
 
-export type FeedbackType = 'bug_report' | 'feature_request' | 'improvement' | 'support' | 'other';
+export type FeedbackType =
+  | 'bug_report'
+  | 'feature_request'
+  | 'improvement'
+  | 'support'
+  | 'security'
+  | 'other';
 
 export type FeedbackStatus =
   | 'new'
